@@ -268,7 +268,7 @@ final class AppModel: ObservableObject {
         finishRecording()
         Task {
             _ = try? await recorder.stop()
-            if let folder { try? await NSWorkspace.shared.recycle([folder]) }
+            if let folder { _ = try? await NSWorkspace.shared.recycle([folder]) }
             refresh()
             startRecording()
         }

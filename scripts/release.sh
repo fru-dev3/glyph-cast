@@ -17,7 +17,8 @@ echo "building Glyph Cast $version"
 SIGN_IDENTITY="$identity" ./scripts/build.sh
 app="build/Glyph Cast.app"
 codesign --verify --strict --deep "$app"
-codesign -dvv "$app" 2>&1 | grep -q "flags=0x10000(runtime)" || { echo "not signed with the hardened runtime"; exit 1; }
+sig=$(codesign -dvv "$app" 2>&1)
+[[ $sig == *"(runtime)"* ]] || { echo "not signed with the hardened runtime"; exit 1; }
 
 echo "making the disk image"
 rm -rf dist && mkdir -p dist/stage

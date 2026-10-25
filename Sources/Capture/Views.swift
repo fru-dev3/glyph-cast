@@ -829,7 +829,7 @@ struct ActionToggle<Options: View>: View {
 /// The whole recording as a waveform: cut stretches dimmed with a red wash, the playhead in green.
 /// Click anywhere to play from there.
 struct Waveform: View {
-    static let bucket = 0.05
+    nonisolated static let bucket = 0.05
     let edit: Edit
     let style: Style
     let energy: Energy?
