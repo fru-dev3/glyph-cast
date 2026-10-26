@@ -115,6 +115,10 @@ enum SelfTest {
         check(text.lowercased().contains("terminal"), "transcript has the words")
         check(edit.words.filter(\.filler).count >= 2, "fillers found (\(edit.words.filter(\.filler).map(\.text)))")
         let style = Style()
+        // This Mac's own "Clean up new recordings automatically" decides what processing turns on.
+        let auto = Style.load().autoCleanup
+        check(edit.removeFillers == auto && edit.shortenPauses == auto, "automatic clean up follows the setting (\(auto ? "on" : "off") here)")
+        edit.removeFillers = false; edit.shortenPauses = false
         check(!edit.isCut(edit.words.first { $0.filler }!, style), "fillers stay until Remove filler words")
         edit.removeFillers = true; edit.shortenPauses = true
         let longGaps = edit.gaps.filter { !$0.head && !$0.tail && $0.length > 1.5 }

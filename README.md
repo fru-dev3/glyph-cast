@@ -124,6 +124,10 @@ music bed.
 
 ## Versions
 
+- **0.1.2** (2026-10-25): name a recording: double-click its name in the list (or right-click >
+  Rename), or press the pencil on the recording bar while it records. The name names the exported
+  MP4. "Add intro and outro" in the Export section leaves them off when they get added later.
+  Glyph Cast now shows up in System Settings > Screen & System Audio Recording on macOS 15 and later.
 - **0.1.1** (2026-10-25): Capture is now Glyph Cast, in the Glyph family: new name and icon, a
   signed and notarized download. Same bundle id and folders, so settings and recordings carry over.
 

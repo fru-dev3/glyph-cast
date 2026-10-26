@@ -7,8 +7,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION=0.1.1
-BUILD=2
+VERSION=0.1.2
+BUILD=3
 
 swift build -c release
 
@@ -35,7 +35,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>LSApplicationCategoryType</key><string>public.app-category.video</string>
   <key>LSMinimumSystemVersion</key><string>15.0</string>
   <key>NSHighResolutionCapable</key><true/>
-  <key>NSHumanReadableCopyright</key><string>Glyph Cast by fru.dev. MIT License.</string>
+  <key>NSHumanReadableCopyright</key><string>© 2026 Inspired Nation, LLC. MIT License.</string>
   <key>NSMicrophoneUsageDescription</key><string>Glyph Cast records your voice with the screen.</string>
   <key>NSScreenCaptureUsageDescription</key><string>Glyph Cast records your screen.</string>
 </dict>
