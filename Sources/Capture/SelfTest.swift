@@ -78,6 +78,12 @@ enum SelfTest {
         print("Pipeline")
         let p = Project(folder: dir.appendingPathComponent("2026-01-01 10-00-00"))
         try FileManager.default.createDirectory(at: p.folder, withIntermediateDirectories: true)
+        // A name sticks (title.txt), names the export safely, and clearing it brings the date back.
+        let dated = p.title
+        p.rename("Demo: build/run")
+        check(Project(folder: p.folder).title == "Demo: build/run" && p.fileName == "Demo- build-run", "a renamed recording keeps its name and exports as \(p.fileName)")
+        p.rename("  ")
+        check(Project(folder: p.folder).title == dated && p.fileName == p.name, "clearing the name brings the date back")
         let aiff = dir.appendingPathComponent("v.aiff").path
         try Tools.run("/usr/bin/say", ["-v", "Samantha", "-o", aiff,
             "[[slnc 1200]] So today, um, I want to show you how this works. [[slnc 2600]] Uh, first we open the terminal. [[slnc 2200]] And then, um, we run the build. [[slnc 1500]]"])

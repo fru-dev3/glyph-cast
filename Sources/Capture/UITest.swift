@@ -179,6 +179,10 @@ enum UITest {
 
     static func run() async {
         let model = AppModel.shared
+        if window == nil {  // say why no window was found, instead of failing every step after
+            print("    no main window: hidden=\(NSApp.isHidden) active=\(NSApp.isActive)")
+            for w in NSApp.windows { print("    window \(w.className) visible=\(w.isVisible) frame=\(w.frame) title=\(w.title)") }
+        }
         window?.setFrame(CGRect(x: 60, y: 60, width: 1440, height: 900), display: true)
         NSApp.activate(ignoringOtherApps: true)
         try? await Task.sleep(for: .seconds(1))

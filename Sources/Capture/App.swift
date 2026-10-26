@@ -16,15 +16,15 @@ struct CaptureApp: App {
                 .tint(AppModel.green)
         }
         .defaultSize(width: 1440, height: 900)
+        // Quit (or crash) while recording, with the window put away, and macOS would restore it closed:
+        // the next launch showed only the menu bar icon. The window always opens at launch.
+        .defaultLaunchBehavior(.presented)
+        .restorationBehavior(.disabled)
 
         MenuBarExtra {
             MenuContent().environmentObject(model)
         } label: {
-            if model.recording {
-                Label(model.elapsedText, systemImage: "record.circle.fill")
-            } else {
-                Image(systemName: "record.circle")
-            }
+            MenuBarLabel().environmentObject(model)
         }
     }
 }
@@ -33,6 +33,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Quit while recording (the app hides itself then) and macOS relaunches it hidden, with no window.
+        if NSApp.isHidden { NSApp.unhide(nil) }
         // scripts/install-mac.sh reads this line to confirm an update kept both permissions.
         let screen = CGPreflightScreenCaptureAccess()
         let mic = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
@@ -41,6 +43,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // `--appearance dark|light`: screenshots of both looks without touching the system setting.
         if let i = CommandLine.arguments.firstIndex(of: "--appearance"), i + 1 < CommandLine.arguments.count {
             NSApp.appearance = NSAppearance(named: CommandLine.arguments[i + 1] == "dark" ? .darkAqua : .aqua)
+        }
+    }
+}
+
+/// The menu bar icon (the time while recording). It is drawn at every launch, so it also opens the
+/// main window when SwiftUI made none: an app launched in the background (open -g, a login item,
+/// a shell) under cooperative activation started with only this icon.
+struct MenuBarLabel: View {
+    @EnvironmentObject var model: AppModel
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        Group {
+            if model.recording {
+                Label(model.elapsedText, systemImage: "record.circle.fill")
+            } else {
+                Image(systemName: "record.circle")
+            }
+        }
+        .task {
+            try? await Task.sleep(for: .milliseconds(500))
+            if !NSApp.windows.contains(where: { $0.identifier?.rawValue.hasPrefix("main") == true }) { openWindow(id: "main") }
         }
     }
 }
@@ -76,7 +100,12 @@ struct MenuContent: View {
 @MainActor
 final class AppModel: ObservableObject {
     static let shared = AppModel()
-    static let green = Color(red: 0, green: 0.5, blue: 0)
+    /// Office green (#008000) in light; in dark a brighter sibling (#2EA043), so green text stays readable.
+    static let green = Color(nsColor: NSColor(name: nil) { a in
+        a.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            ? NSColor(srgbRed: 0.18, green: 0.63, blue: 0.26, alpha: 1)
+            : NSColor(srgbRed: 0, green: 0.5, blue: 0, alpha: 1)
+    })
 
     @Published var style = Style.load() { didSet { if style != oldValue { style.save() } } }
     @Published var projects: [Project] = []
@@ -285,6 +314,28 @@ final class AppModel: ObservableObject {
         timer?.invalidate()
         hud.hide()
         LiveLevel.shared.levels = Array(repeating: 0, count: 40)
+    }
+
+    /// The pencil on the recording bar: name the take while it records. The bar can't take
+    /// typing (it never becomes the key window), so a small dialog asks; Glyph Cast's own
+    /// windows stay out of the video.
+    func nameRecording() {
+        guard let folder = recordingFolder else { return }
+        let project = cache[folder] ?? Project(folder: folder)
+        let alert = NSAlert()
+        alert.messageText = "Name this recording"
+        alert.addButton(withTitle: "Save")
+        alert.addButton(withTitle: "Cancel")
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
+        field.stringValue = project.customTitle ?? ""
+        field.placeholderString = project.title
+        alert.accessoryView = field
+        alert.window.initialFirstResponder = field
+        let before = NSWorkspace.shared.frontmostApplication
+        NSApp.activate()
+        if alert.runModal() == .alertFirstButtonReturn { project.rename(field.stringValue) }
+        before?.activate() // back to what was being recorded; the bar stays up
+        cache[folder] = project // the list shows the name once it lists this take
     }
 
     func stopRecording() {

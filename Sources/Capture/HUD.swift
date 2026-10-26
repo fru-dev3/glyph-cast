@@ -94,6 +94,11 @@ struct PillView: View {
             .accessibilityLabel("Microphone")
 
             Spacer(minLength: 0)
+            Button { model.nameRecording() } label: {
+                Image(systemName: "pencil").frame(width: 30, height: 30)
+            }
+            .help("Name this recording")
+            .accessibilityLabel("Name this recording")
             Button { model.togglePause() } label: {
                 Image(systemName: model.paused ? "play.fill" : "pause.fill").frame(width: 30, height: 30)
             }

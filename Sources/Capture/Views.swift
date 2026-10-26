@@ -56,12 +56,40 @@ struct RootView: View {
 
 struct ProjectRow: View {
     @ObservedObject var project: Project
+    @State private var editing = false
+    @State private var draft = ""
+    @FocusState private var focused: Bool
+
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(project.name).font(.body)
+            if editing {
+                TextField("Name", text: $draft)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($focused)
+                    .onSubmit(commit)
+                    .onExitCommand { editing = false }
+                    .onChange(of: focused) { _, now in if !now { commit() } }
+                    .accessibilityIdentifier("rename-field")
+            } else {
+                Text(project.title).font(.body)
+                    .onTapGesture(count: 2, perform: startRename)
+            }
             Text(subtitle).font(.callout).foregroundStyle(.secondary)
         }
         .padding(.vertical, 2)
+        .contextMenu { Button("Rename") { startRename() } }
+    }
+
+    private func startRename() {
+        draft = project.title
+        editing = true
+        DispatchQueue.main.async { focused = true }
+    }
+
+    private func commit() {
+        guard editing else { return }
+        editing = false
+        if draft != project.title { project.rename(draft) }
     }
     var subtitle: String {
         if project.processing { return project.status }
@@ -562,6 +590,16 @@ struct Inspector: View {
                         Button("Choose") { if let f = pickFolder() { model.style.exportFolder = f } }
                     }
                 }
+                if !model.style.introPath.isEmpty || !model.style.outroPath.isEmpty {
+                    Toggle("Add intro and outro", isOn: Binding(
+                        get: { model.style.intro || model.style.outro },
+                        set: { on in
+                            model.style.intro = on && !model.style.introPath.isEmpty
+                            model.style.outro = on && !model.style.outroPath.isEmpty
+                        }))
+                        .accessibilityIdentifier("export-clips")
+                    Text("Off when the Mac adds them later.").font(.caption).foregroundStyle(.secondary)
+                }
                 if let f = model.exporting[project.folder] {
                     ProgressView(value: f) { Text("Exporting \(Int(f * 100))%") }
                 } else {
@@ -866,7 +904,7 @@ struct Waveform: View {
             .onTapGesture(coordinateSpace: .local) { p in seek(Double(p.x / max(geo.size.width, 1)) * edit.duration) }
         }
         .padding(.horizontal, 12).padding(.vertical, 6)
-        .background(.black.opacity(0.25))
+        .background(Color.primary.opacity(0.06))
         .accessibilityLabel("Waveform")
     }
 

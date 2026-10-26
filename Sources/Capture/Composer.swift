@@ -171,7 +171,7 @@ enum Composer {
         let built = try await build(p, edit, style, height: style.resolution)
         let folder = URL(fileURLWithPath: style.exportFolder)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let url = folder.appendingPathComponent("\(p.name).mp4")
+        let url = folder.appendingPathComponent("\(p.fileName).mp4")
         try? FileManager.default.removeItem(at: url)
         try await encode(built, to: url, height: style.resolution, progress: progress)
         progress(1)

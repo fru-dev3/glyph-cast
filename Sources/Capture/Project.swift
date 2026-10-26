@@ -223,6 +223,35 @@ final class Project: ObservableObject, Identifiable, Hashable {
 
     var id: URL { folder }
     var name: String { folder.lastPathComponent }
+
+    /// The name you gave it (title.txt in its folder). The folder itself never moves, so a
+    /// recording can be renamed while it is still being written.
+    @Published private(set) var customTitle: String?
+    var titleURL: URL { folder.appendingPathComponent("title.txt") }
+
+    func rename(_ text: String) {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if t.isEmpty { try? FileManager.default.removeItem(at: titleURL) } else { try? t.write(to: titleURL, atomically: true, encoding: .utf8) }
+        customTitle = t.isEmpty ? nil : t
+    }
+
+    /// The export's file name: the title, minus characters Finder dislikes.
+    var fileName: String {
+        guard let t = customTitle else { return name }
+        let safe = t.components(separatedBy: CharacterSet(charactersIn: "/:\\?%*|\"<>")).joined(separator: "-")
+        return safe.isEmpty ? name : safe
+    }
+
+    /// Your name for it, else "Oct 25, 9:30 AM" from the folder's "2026-10-25 09-30-00"; any other folder name as it is.
+    var title: String {
+        if let customTitle { return customTitle }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd HH-mm-ss"
+        guard let d = f.date(from: name) else { return name }
+        let sameYear = Calendar.current.isDate(d, equalTo: Date(), toGranularity: .year)
+        return d.formatted(.dateTime.month(.abbreviated).day().year(sameYear ? .omitted : .defaultDigits).hour().minute())
+    }
     var screen: URL { folder.appendingPathComponent("screen.mov") }
     var mic: URL { folder.appendingPathComponent("mic.caf") }
     var system: URL { folder.appendingPathComponent("system.caf") }
@@ -235,6 +264,8 @@ final class Project: ObservableObject, Identifiable, Hashable {
     init(folder: URL) {
         self.folder = folder
         if let d = try? Data(contentsOf: editURL) { edit = try? JSONDecoder().decode(Edit.self, from: d) }
+        let saved = (try? String(contentsOf: titleURL, encoding: .utf8))?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        customTitle = saved.isEmpty ? nil : saved
     }
 
     static func == (a: Project, b: Project) -> Bool { a.folder == b.folder }
