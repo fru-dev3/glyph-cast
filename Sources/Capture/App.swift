@@ -152,6 +152,10 @@ final class AppModel: ObservableObject {
         if !CGPreflightScreenCaptureAccess() {
             needsScreenPermission = true
             CGRequestScreenCaptureAccess()
+            // On macOS 15 and later the call above can do nothing at all (no prompt, no row in
+            // Settings). Asking ScreenCaptureKit for the screens is what puts Glyph Cast in the
+            // list and shows the system prompt.
+            _ = try? await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
             return
         }
         needsScreenPermission = false
@@ -163,6 +167,7 @@ final class AppModel: ObservableObject {
     /// in Finder: dragging it into the Settings list works every time.
     func openScreenSettings() {
         CGRequestScreenCaptureAccess()
+        Task { _ = try? await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true) } // adds the row (see refreshSources)
         NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
         NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
     }
