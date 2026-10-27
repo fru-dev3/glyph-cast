@@ -7,7 +7,7 @@ transcript editing, in one free Mac app.
 
 Its page is [glyph.fru.dev/cast](https://glyph.fru.dev/cast). Part of the
 [Glyph family](https://glyph.fru.dev) by [fru.dev](https://fru.dev): Glyph Studio, Glyph Jot,
-Glyph Knowledge and Glyph Rig, plus two tools, Glyph Arena and Glyph Cast. Formerly called Capture.
+Glyph Ibis and Glyph Rig, plus two tools, Glyph Arena and Glyph Cast. Formerly called Capture.
 
 ## Install
 
