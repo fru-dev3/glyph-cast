@@ -5,8 +5,9 @@ cleaned and leveled, the ums and dead air cut, the screen framed on a background
 you click, an intro and outro attached if you want them. Screen recording and framing plus
 transcript editing, in one free Mac app.
 
-Part of the [Glyph family](https://glyph.fru.dev) by [fru.dev](https://fru.dev): Glyph Studio,
-Glyph Jot, Glyph Cast, Glyph Code. Formerly called Capture.
+Its page is [glyph.fru.dev/cast](https://glyph.fru.dev/cast). Part of the
+[Glyph family](https://glyph.fru.dev) by [fru.dev](https://fru.dev): Glyph Studio, Glyph Jot,
+Glyph Knowledge and Glyph Rig, plus two tools, Glyph Arena and Glyph Cast. Formerly called Capture.
 
 ## Install
 
