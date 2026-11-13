@@ -49,11 +49,10 @@ enum Composer {
         ("obsidian", "Obsidian"), ("pearl", "Pearl"), ("slate", "Slate"),
     ]
 
-    /// In the app bundle; in a dev build, the repo's assets folder.
+    /// In the app bundle; in a dev build (run from the repo folder), the repo's assets folder.
     static let wallpaperFolder: URL = {
         if let r = Bundle.main.resourceURL?.appendingPathComponent("wallpapers"), FileManager.default.fileExists(atPath: r.path) { return r }
-        return URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("assets/wallpapers")
+        return URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("assets/wallpapers")
     }()
 
     static func wallpaper(_ id: String, thumb: Bool = false) -> URL {

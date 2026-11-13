@@ -7,15 +7,21 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION=0.1.2
-BUILD=3
+VERSION=0.1.3
+BUILD=4
 
-swift build -c release
+# A public (Developer ID) build carries no source paths: file and debug paths are remapped, then symbols stripped.
+if [[ ${SIGN_IDENTITY:-} == "Developer ID Application"* ]]; then
+  swift build -c release -Xswiftc -file-prefix-map -Xswiftc "$PWD=." -Xswiftc -debug-prefix-map -Xswiftc "$PWD=."
+else
+  swift build -c release
+fi
 
 APP="build/Glyph Cast.app"
 rm -rf build/Capture.app "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp .build/release/Capture "$APP/Contents/MacOS/Capture"
+[[ ${SIGN_IDENTITY:-} == "Developer ID Application"* ]] && strip -S -x "$APP/Contents/MacOS/Capture"
 cp assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 cp -R assets/wallpapers "$APP/Contents/Resources/wallpapers"
 

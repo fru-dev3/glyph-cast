@@ -125,6 +125,8 @@ music bed.
 
 ## Versions
 
+- **0.1.3** (2026-11-13): Maintenance build.
+  No feature changes.
 - **0.1.2** (2026-10-25): name a recording: double-click its name in the list (or right-click >
   Rename), or press the pencil on the recording bar while it records. The name names the exported
   MP4. "Add intro and outro" in the Export section leaves them off when they get added later.

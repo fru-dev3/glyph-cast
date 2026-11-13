@@ -17,6 +17,7 @@ echo "building Glyph Cast $version"
 SIGN_IDENTITY="$identity" ./scripts/build.sh
 app="build/Glyph Cast.app"
 codesign --verify --strict --deep "$app"
+./scripts/public-scan.sh "$app"   # fails the release if the app carries anything personal
 sig=$(codesign -dvv "$app" 2>&1)
 [[ $sig == *"(runtime)"* ]] || { echo "not signed with the hardened runtime"; exit 1; }
 
@@ -37,6 +38,7 @@ if ! grep -q "status: Accepted" <<<"$result"; then
 fi
 xcrun stapler staple "$dmg"
 xcrun stapler validate "$dmg"
+./scripts/public-scan.sh "$dmg"   # the final image, before anything is uploaded
 
 echo "checking a downloaded copy passes Gatekeeper"
 cp "$dmg" dist/check.dmg
